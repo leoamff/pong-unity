@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     public GameObject restartButton;
     public GameObject winnerPanel;
     public TextMeshProUGUI winnerText;
+    public GameObject backgroundImage;
 
     void Start()
     {
@@ -24,12 +25,14 @@ public class GameManager : MonoBehaviour
         startButton.SetActive(true);
         restartButton.SetActive(false);
         winnerPanel.SetActive(false);
+        backgroundImage.SetActive(true);
     }
 
     public void StartGame()
     {
         Time.timeScale = 1f;
         startButton.SetActive(false);
+        backgroundImage.SetActive(false);
     }
 
     public void Player1Point()
