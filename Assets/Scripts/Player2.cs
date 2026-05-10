@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 public class Player2 : MonoBehaviour
 {
     public float moveSpeed;
+    public float limit = 4f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -26,5 +27,13 @@ public class Player2 : MonoBehaviour
         {
             transform.Translate(Vector2.down * moveSpeed * Time.deltaTime);
         }
+
+        float clampedY = Mathf.Clamp(transform.position.y, -limit, limit);
+
+        transform.position = new Vector3(
+            transform.position.x,
+            clampedY,
+            transform.position.z
+        );        
     }
 }
