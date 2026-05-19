@@ -8,6 +8,9 @@ public class Ball : MonoBehaviour
     // impede a bola de andar reta demais
     public float minYVelocity = 0.5f;
 
+    // tempo de espera após um ponto (em segundos)
+    public float resetDelay = 1.5f;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -43,12 +46,21 @@ public class Ball : MonoBehaviour
 
     public void ResetBall()
     {
+        StartCoroutine(ResetBallCoroutine());
+    }
+
+    private System.Collections.IEnumerator ResetBallCoroutine()
+    {
+        // Posiciona a bola no centro e zera a velocidade imediatamente
         transform.position = Vector2.zero;
         transform.rotation = Quaternion.identity;
-
         rb.linearVelocity = Vector2.zero;
         rb.angularVelocity = 0f;
 
+        // Espera o tempo de delay configurado
+        yield return new WaitForSeconds(resetDelay);
+
+        // Lança a bola novamente
         LaunchBall();
     }
 
@@ -56,5 +68,19 @@ public class Ball : MonoBehaviour
     void Update()
     {
 
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (AudioManager.instance == null) return;
+
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            AudioManager.instance.PlayHitPaddle();
+        }
+        else
+        {
+            AudioManager.instance.PlayHitWall();
+        }
     }
 }
