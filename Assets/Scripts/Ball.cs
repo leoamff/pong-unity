@@ -14,6 +14,7 @@ public class Ball : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        if (rb == null) rb = GetComponent<Rigidbody2D>();
         LaunchBall();
     }
 

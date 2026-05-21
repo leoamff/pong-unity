@@ -34,30 +34,35 @@ public class Point : MonoBehaviour
         // Verifica se a colisão foi com a bola (por Tag ou pelo Componente)
         if (collision.CompareTag("Ball") || collision.GetComponent<Ball>() != null)
         {
-            if (gameManager != null)
+            if (GameManager.instance != null)
             {
                 if (isLeftGoal)
                 {
-                    gameManager.Player2Point();
+                    GameManager.instance.Player2Point();
                 }
                 else
                 {
-                    gameManager.Player1Point();
+                    GameManager.instance.Player1Point();
+                }
+            }
+            else
+            {
+                // Fallback caso o singleton não esteja pronto
+                if (gameManager != null)
+                {
+                    if (isLeftGoal) gameManager.Player2Point();
+                    else gameManager.Player1Point();
                 }
             }
 
             // Reseta a bola de forma segura
-            if (ball != null)
+            Ball ballToReset = ball;
+            if (ballToReset == null) ballToReset = collision.GetComponent<Ball>();
+            if (ballToReset == null) ballToReset = FindObjectOfType<Ball>();
+
+            if (ballToReset != null)
             {
-                ball.ResetBall();
-            }
-            else
-            {
-                Ball ballComponent = collision.GetComponent<Ball>();
-                if (ballComponent != null)
-                {
-                    ballComponent.ResetBall();
-                }
+                ballToReset.ResetBall();
             }
         }
     }

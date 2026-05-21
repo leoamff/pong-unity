@@ -4,6 +4,9 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager instance;
+    public static int Winner { get; private set; } // 0 = Player 1, 1 = Player 2
+
     public int player1Score = 0;
     public int player2Score = 0;
 
@@ -18,6 +21,18 @@ public class GameManager : MonoBehaviour
     public AudioManager audioManager;
     public float victoryDelay = 3f;
     public int scoreToWin = 5;
+
+    void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     void Start()
     {
@@ -34,9 +49,9 @@ public class GameManager : MonoBehaviour
         if (backgroundImage != null) backgroundImage.SetActive(true);
 
         // Toca a música de fundo se o audioManager estiver presente
-        if (audioManager != null)
+        if (AudioManager.instance != null)
         {
-            audioManager.PlayBackgroundMusic();
+            AudioManager.instance.PlayBackgroundMusic();
         }
     }
 
@@ -44,19 +59,33 @@ public class GameManager : MonoBehaviour
     {
         // Se não houver botão de start, o jogo apenas inicia automaticamente de forma silenciosa
         if (startButton == null) Debug.Log("GameManager: Início automático ativado (sem botão de Start).");
+        
+        // Tenta encontrar os textos de score se estiverem nulos
+        if (player1ScoreText == null || player2ScoreText == null)
+        {
+            TextMeshProUGUI[] allTexts = FindObjectsOfType<TextMeshProUGUI>();
+            foreach (var t in allTexts)
+            {
+                if (t.name.Contains("Score1") || t.name.Contains("Player1")) player1ScoreText = t;
+                if (t.name.Contains("Score2") || t.name.Contains("Player2")) player2ScoreText = t;
+            }
+        }
+
         if (player1ScoreText == null || player2ScoreText == null) Debug.LogError("GameManager: Textos de placar não atribuídos!");
+        
+        if (audioManager == null) audioManager = AudioManager.instance;
         if (audioManager == null) Debug.LogWarning("GameManager: 'Audio Manager' não atribuído! O jogo funcionará, mas sem som.");
     }
 
     public void StartGame()
     {
         Time.timeScale = 1f;
-        startButton.SetActive(false);
-        if (backgroundImage != null) backgroundImage.SetActive(true); // Garante que continue visível
+        if (startButton != null) startButton.SetActive(false);
+        if (backgroundImage != null) backgroundImage.SetActive(true); 
         
-        if (audioManager != null)
+        if (AudioManager.instance != null)
         {
-            audioManager.PlayBackgroundMusic();
+            AudioManager.instance.PlayBackgroundMusic();
         }
     }
 
@@ -64,7 +93,7 @@ public class GameManager : MonoBehaviour
     {
         player1Score++;
         UpdateScore();
-        if (audioManager != null) audioManager.PlayScore();
+        if (AudioManager.instance != null) AudioManager.instance.PlayScore();
         CheckWinner();
     }
 
@@ -72,42 +101,41 @@ public class GameManager : MonoBehaviour
     {
         player2Score++;
         UpdateScore();
-        if (audioManager != null) audioManager.PlayScore();
+        if (AudioManager.instance != null) AudioManager.instance.PlayScore();
         CheckWinner();
     }
 
     void UpdateScore()
     {
-        player1ScoreText.text = player1Score.ToString();
-        player2ScoreText.text = player2Score.ToString();
+        if (player1ScoreText != null) player1ScoreText.text = player1Score.ToString();
+        if (player2ScoreText != null) player2ScoreText.text = player2Score.ToString();
     }
 
     void CheckWinner()
     {
         if (player1Score >= scoreToWin)
         {
+            Winner = 0;
             EndGame("Player 1 venceu!");
         }
         else if (player2Score >= scoreToWin)
         {
+            Winner = 1;
             EndGame("Player 2 venceu!");
         }
     }
 
     void EndGame(string message)
     {
-        // Em vez de pausar o tempo imediatamente, deixamos o jogo rodar um pouco 
-        // ou apenas mostramos o painel de vitória.
-        
-        winnerText.text = message;
-        winnerPanel.SetActive(true);
-        if (restartButton != null) restartButton.SetActive(false); // Escondemos o botão pois será automático
-        startButton.SetActive(false);
+        if (winnerText != null) winnerText.text = message;
+        if (winnerPanel != null) winnerPanel.SetActive(true);
+        if (restartButton != null) restartButton.SetActive(false);
+        if (startButton != null) startButton.SetActive(false);
 
-        if (audioManager != null)
+        if (AudioManager.instance != null)
         {
-            audioManager.StopBackgroundMusic();
-            audioManager.PlayVictory();
+            AudioManager.instance.StopBackgroundMusic();
+            AudioManager.instance.PlayVictory();
         }
 
         StartCoroutine(AutoRestartCoroutine());
@@ -115,9 +143,10 @@ public class GameManager : MonoBehaviour
 
     System.Collections.IEnumerator AutoRestartCoroutine()
     {
-        // Espera alguns segundos antes de reiniciar
         yield return new WaitForSecondsRealtime(victoryDelay);
-        RestartGame();
+        
+        // Em vez de reiniciar a cena, vamos para a cena de vitória se ela existir
+        SceneManager.LoadScene("Victory");
     }
 
     public void RestartGame()

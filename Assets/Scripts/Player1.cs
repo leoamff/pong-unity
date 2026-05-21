@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 public class Player1 : MonoBehaviour
 {
-    public float moveSpeed;
+    public float moveSpeed = 10f;
 
     // limite da tela
     public float limit = 4f;

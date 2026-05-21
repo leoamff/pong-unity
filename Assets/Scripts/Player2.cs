@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 public class Player2 : MonoBehaviour
 {
-    public float moveSpeed;
+    public float moveSpeed = 10f;
     public float limit = 4f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
